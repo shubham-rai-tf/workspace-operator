@@ -1,8 +1,8 @@
 name: Build and publish workspace operator
 on:
   push:
-    tags:
-      - '*'
+    branches:
+      - main
 
 env:
   GITHUB_SHA: ${{ github.sha }}
@@ -20,10 +20,6 @@ jobs:
         run: |
           echo "repository name is $REPOSITORY_NAME"
           echo "DOCKER_REPO=truefoundrycloud/$REPOSITORY_NAME" >> $GITHUB_ENV
-      - name: Set repo tag value
-        run: |
-          echo "GITHUB_REF is $GITHUB_REF"
-          echo "GIT_TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
       - name: Docker login
         run: |
           docker login -u truefoundry -p "${{ secrets.DOCKERHUB_TOKEN }}"
@@ -34,7 +30,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.DOCKER_REPO }}:${{ env.GIT_TAG }}
+          tags: ${{ env.DOCKER_REPO }}:${{ env.GITHUB_SHA }}
           cache-from: type=registry,ref=${{ env.DOCKER_REPO }}:buildcache
           cache-to: type=registry,ref=${{ env.DOCKER_REPO }}:buildcache,mode=max
       
